@@ -1,37 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <script src="./build/main.js" defer></script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
+    <script type="module" src="./build/app.js" defer></script>
     <title>Document</title>
-</head>
-<body>
-    <header>
+  </head>
+  <body>
+    <div class="app">
+      <header>
         <div class="header-title-div">
-            <h1>
-                MOTION
-            </h1>
+          <h1>MOTION</h1>
         </div>
         <div class="header-button-div">
-            <button class="button-video">Video</button>
-            <button class="button-image">Image</button>
-            <button class="button-note">Note</button>
-            <button class="button-task">Task</button>
-            <dialog id="video-modal">
-                <h1>Title</h1>
-                <input type="text" name="video-title" id="video-title">
-                <h1>URL</h1>
-                <input type="url" name="video-title" id="video-title">
-            </dialog>
+          <button class="button-video">Video</button>
+          <button class="button-image">Image</button>
+          <button class="button-note">Note</button>
+          <button class="button-task">Task</button>
+          <dialog id="video-modal">
+            <h1>Title</h1>
+            <input type="text" name="video-title" id="video-title" />
+            <h1>URL</h1>
+            <input type="url" name="video-title" id="video-title" />
+          </dialog>
         </div>
-    </header>
-    <section id="body-section">
-
-    </section>
-    <footer>
+      </header>
+      <main class="document"></main>
+      <footer>
         <p>Footer Copyright belongs to Contigo waterbottle next to me</p>
-    </footer>
-</body>
+      </footer>
+    </div>
+  </body>
+
+  
 </html>
