@@ -6,6 +6,11 @@ body {
     margin: 0;
 }
 
+.document {
+    width: 100%;
+    overflow-y: scroll;
+}
+
 .app {
     margin: 0;
     width: 100%;
@@ -39,3 +44,4 @@ footer {
     flex-direction: column;
     align-items: center;
 }
+
