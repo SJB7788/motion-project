@@ -7,10 +7,11 @@ class BaseComponent {
     attachTo(parent, position = "afterbegin") {
         parent.insertAdjacentElement(position, this.element);
     }
-}
-export class PageComponent extends BaseComponent {
-    constructor() {
-        super('<ul class="page">This is PageComponent!</ul>');
+    removeFrom(parent) {
+        if (parent !== this.element.parentElement) {
+            throw new Error('Parent mismatch!');
+        }
+        parent.removeChild(this.element);
     }
 }
 export class ImageComponent extends BaseComponent {
@@ -80,5 +81,120 @@ export class TaskComponent extends BaseComponent {
         });
         const titleElement = this.element.querySelector(".task__title");
         titleElement.textContent = title;
+    }
+}
+export class PageItemComponent extends BaseComponent {
+    constructor() {
+        super(`<li class="page-item">
+          <section class="page-item__body"></section>
+            <div class="page-item__controls">
+              <button class="close">&times;</button>
+            </div>
+          </li>`);
+        const closeBtn = this.element.querySelector('.close');
+        closeBtn.onclick = () => {
+            this.closeListener && this.closeListener();
+        };
+    }
+    addChild(child) {
+        const container = this.element.querySelector('.page-item__body');
+        child.attachTo(container);
+    }
+    setOnCloseListener(listener) {
+        this.closeListener = listener;
+    }
+}
+export class PageComponent extends BaseComponent {
+    constructor(pageItemConstructor) {
+        super('<ul class="page"></ul>');
+        this.pageItemConstructor = pageItemConstructor;
+    }
+    addChild(section) {
+        const item = new this.pageItemConstructor();
+        item.addChild(section);
+        item.attachTo(this.element, 'beforeend');
+        item.setOnCloseListener(() => {
+            item.removeFrom(this.element);
+        });
+    }
+}
+export class InputDialog extends BaseComponent {
+    constructor() {
+        super(`
+    <section class="dialog">
+      <div class="dialog__container">
+        <button class="close">&times;</button>
+        <div id="dialog__body">
+            <button class="dialog__submit">ADD</button>
+        </div>
+      </div>
+    </section>
+    `);
+        const closeBtn = this.element.querySelector('.close');
+        closeBtn.onclick = () => {
+            this.closeListener && this.closeListener();
+        };
+        const submitBtn = this.element.querySelector('.dialog__submit');
+        submitBtn.onclick = () => {
+            this.submitListener && this.submitListener();
+        };
+    }
+    setOnCloseListener(listener) {
+        this.closeListener = listener;
+    }
+    setOnSubmitListener(listener) {
+        this.submitListener = listener;
+    }
+    addChild(child) {
+        const body = this.element.querySelector('#dialog__body');
+        child.attachTo(body);
+    }
+}
+export class MediaInputDialog extends BaseComponent {
+    constructor() {
+        super(`<div>
+      <div class="form__container">
+        <label for="title">Title</label>
+        <input type="text" id="title"/>
+      </div>
+      <div class="form__container">
+        <label for="url">URL</label>
+        <input type="text" id="url"/>
+      </div>
+    </div>
+    `);
+    }
+    get title() {
+        const element = this.element.querySelector('#title');
+        return element.value;
+    }
+    get url() {
+        const element = this.element.querySelector('#url');
+        return element.value;
+    }
+}
+export class TextInputDialog extends BaseComponent {
+    constructor() {
+        super(`<div>
+      <div class="form__container">
+        <label for="title">Title</label>
+        <input type="text" id="title"/>
+      </div>
+      <div class="form__container">
+        <label for="body">Body</label>
+        <textarea type="text" row="3" id="body"></textarea>
+      </div>
+    </div>
+    `);
+    }
+    get title() {
+        const element = this.element.querySelector('#title');
+        console.log(element.value);
+        return element.value;
+    }
+    get body() {
+        const element = this.element.querySelector('#body');
+        console.log(element.value);
+        return element.value;
     }
 }

@@ -1,5 +1,6 @@
-interface Component {
+export interface Component {
   attachTo(parent: HTMLElement, position?: InsertPosition): void
+  removeFrom(parent: HTMLElement): void
 }
 
 class BaseComponent<T extends HTMLElement> implements Component {
@@ -13,14 +14,16 @@ class BaseComponent<T extends HTMLElement> implements Component {
   attachTo(parent: HTMLElement, position: InsertPosition = "afterbegin") {
     parent.insertAdjacentElement(position, this.element);
   }
-}
 
-export class PageComponent extends BaseComponent<HTMLUListElement>{
-  constructor() {
-    super('<ul class="page">This is PageComponent!</ul>')
+  removeFrom(parent: HTMLElement) {
+    if (parent !== this.element.parentElement) {
+      throw new Error('Parent mismatch!')
+    }
+    parent.removeChild(this.element);
   }
-
 }
+
+// Content Components
 
 export class ImageComponent extends BaseComponent<HTMLElement>{
   constructor(title: string, url: string) {
@@ -117,5 +120,158 @@ export class TaskComponent extends BaseComponent<HTMLElement> {
       ".task__title"
     )! as HTMLParagraphElement;
     titleElement.textContent = title;
+  }
+}
+
+// page components
+
+type OnCloseListener = () => void;
+
+type SectionContainerConstructor = {
+  new(): SectionContainer;
+}
+
+export interface Composable {
+  addChild(child: Component): void;
+}
+
+interface SectionContainer extends Component, Composable {
+  setOnCloseListener(listener: OnCloseListener): void;
+}
+
+export class PageItemComponent extends BaseComponent<HTMLElement> implements SectionContainer {
+  private closeListener?: OnCloseListener;
+  constructor() {
+    super(`<li class="page-item">
+          <section class="page-item__body"></section>
+            <div class="page-item__controls">
+              <button class="close">&times;</button>
+            </div>
+          </li>`);
+    const closeBtn = this.element.querySelector('.close')! as HTMLButtonElement;
+    closeBtn.onclick = () => {
+      this.closeListener && this.closeListener()
+    }
+  }
+
+  addChild(child: Component) {
+    const container = this.element.querySelector('.page-item__body')! as HTMLElement;
+    child.attachTo(container);
+  }
+
+  setOnCloseListener(listener: OnCloseListener) {
+    this.closeListener = listener;
+
+  }
+}
+
+export class PageComponent extends BaseComponent<HTMLUListElement> implements Composable {
+  constructor(private pageItemConstructor: SectionContainerConstructor) {
+    super('<ul class="page"></ul>')
+  }
+
+  addChild(section: Component) {
+    const item = new this.pageItemConstructor();
+    item.addChild(section);
+    item.attachTo(this.element, 'beforeend');
+    item.setOnCloseListener(() => {
+      item.removeFrom(this.element);
+    })
+  }
+}
+
+// dialog
+type OnSubmitListener = () => void;
+
+export class InputDialog extends BaseComponent<HTMLElement> implements Composable {
+  closeListener?: OnCloseListener;
+  submitListener?: OnSubmitListener
+  constructor() {
+    super(`
+    <section class="dialog">
+      <div class="dialog__container">
+        <button class="close">&times;</button>
+        <div id="dialog__body">
+            <button class="dialog__submit">ADD</button>
+        </div>
+      </div>
+    </section>
+    `)
+    const closeBtn = this.element.querySelector('.close')! as HTMLElement;
+    closeBtn.onclick = () => {
+      this.closeListener && this.closeListener()
+    }
+    const submitBtn = this.element.querySelector('.dialog__submit')! as HTMLElement;
+    submitBtn.onclick = () => {
+      this.submitListener && this.submitListener()
+    }
+  }
+
+  setOnCloseListener(listener: OnCloseListener) {
+    this.closeListener = listener
+  }
+
+  setOnSubmitListener(listener: OnSubmitListener) {
+    this.submitListener = listener
+  }
+
+  addChild(child: Component) {
+    const body = this.element.querySelector('#dialog__body')! as HTMLElement;
+    child.attachTo(body);
+  }
+}
+
+export class MediaInputDialog extends BaseComponent<HTMLElement> {
+  constructor() {
+    super(`<div>
+      <div class="form__container">
+        <label for="title">Title</label>
+        <input type="text" id="title"/>
+      </div>
+      <div class="form__container">
+        <label for="url">URL</label>
+        <input type="text" id="url"/>
+      </div>
+    </div>
+    `)
+  }
+
+  get title(): string {
+    const element = this.element.querySelector('#title')! as HTMLInputElement;
+    return element.value
+  }
+
+  get url(): string {
+    const element = this.element.querySelector('#url')! as HTMLTextAreaElement;
+    return element.value
+  }
+}
+
+export class TextInputDialog extends BaseComponent<HTMLElement> {
+  constructor() {
+    super(`<div>
+      <div class="form__container">
+        <label for="title">Title</label>
+        <input type="text" id="title"/>
+      </div>
+      <div class="form__container">
+        <label for="body">Body</label>
+        <textarea type="text" row="3" id="body"></textarea>
+      </div>
+    </div>
+    `)
+  }
+
+  get title(): string {
+    const element = this.element.querySelector('#title')! as HTMLInputElement;
+    console.log(element.value);
+    
+    return element.value
+  }
+
+  get body(): string {
+    const element = this.element.querySelector('#body')! as HTMLInputElement;    
+    console.log(element.value);
+    return element.value
   }
 }

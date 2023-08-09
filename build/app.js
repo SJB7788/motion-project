@@ -1,16 +1,93 @@
-import { PageComponent, ImageComponent, VideoComponent, NoteComponent, TaskComponent } from "./main.js";
+import { PageComponent, ImageComponent, VideoComponent, NoteComponent, TaskComponent, PageItemComponent, InputDialog, MediaInputDialog, TextInputDialog } from "./main.js";
 class App {
-    constructor(appRoot) {
-        this.page = new PageComponent();
+    constructor(appRoot, dialogRoot) {
+        this.dialogRoot = dialogRoot;
+        this.page = new PageComponent(PageItemComponent);
         this.page.attachTo(appRoot);
-        const image = new ImageComponent('Image Title', 'https://fastly.picsum.photos/id/15/200/300.jpg?hmac=lozQletmrLG9PGBV1hTM1PnmvHxKEU0lAZWu8F2oL30');
-        image.attachTo(appRoot, 'beforeend');
-        const video = new VideoComponent('Video Title', 'https://www.youtube.com/watch?v=90IJanuV_0M');
-        video.attachTo(appRoot, 'beforeend');
-        const note = new NoteComponent('New Note', 'Hello I am a note and this is the first note i am making wowzers');
-        note.attachTo(appRoot, 'beforeend');
-        const task = new TaskComponent('Task', ['study', 'eat', 'game']);
-        task.attachTo(appRoot, 'beforeend');
+        const imageBtn = document.querySelector('.button-image');
+        imageBtn.addEventListener('click', () => {
+            const dialog = new InputDialog();
+            const mediaSection = new MediaInputDialog();
+            dialog.addChild(mediaSection);
+            dialog.attachTo(dialogRoot);
+            dialog.setOnCloseListener(() => {
+                dialog.removeFrom(dialogRoot);
+            });
+            dialog.setOnSubmitListener(() => {
+                const image = new ImageComponent(mediaSection.title, mediaSection.url);
+                this.page.addChild(image);
+                dialog.removeFrom(dialogRoot);
+            });
+            dialog.attachTo(dialogRoot);
+        });
+        const videoBtn = document.querySelector('.button-video');
+        videoBtn.addEventListener('click', () => {
+            const dialog = new InputDialog();
+            const mediaSection = new MediaInputDialog();
+            dialog.addChild(mediaSection);
+            dialog.attachTo(dialogRoot);
+            dialog.setOnCloseListener(() => {
+                dialog.removeFrom(dialogRoot);
+            });
+            dialog.setOnSubmitListener(() => {
+                const video = new VideoComponent(mediaSection.title, mediaSection.url);
+                this.page.addChild(video);
+                dialog.removeFrom(dialogRoot);
+            });
+            dialog.attachTo(dialogRoot);
+        });
+        const noteBtn = document.querySelector('.button-note');
+        noteBtn.addEventListener('click', () => {
+            const dialog = new InputDialog();
+            const textSection = new TextInputDialog();
+            dialog.addChild(textSection);
+            dialog.attachTo(dialogRoot);
+            dialog.setOnCloseListener(() => {
+                dialog.removeFrom(dialogRoot);
+            });
+            dialog.setOnSubmitListener(() => {
+                const text = new NoteComponent(textSection.title, textSection.body);
+                this.page.addChild(text);
+                dialog.removeFrom(dialogRoot);
+            });
+            dialog.attachTo(dialogRoot);
+        });
+        const taskBtn = document.querySelector('.button-task');
+        taskBtn.addEventListener('click', () => {
+            const dialog = new InputDialog();
+            const textSection = new TextInputDialog();
+            dialog.addChild(textSection);
+            dialog.attachTo(dialogRoot);
+            dialog.setOnCloseListener(() => {
+                dialog.removeFrom(dialogRoot);
+            });
+            dialog.setOnSubmitListener(() => {
+                const taskArray = textSection.body.split(" ");
+                const task = new TaskComponent(textSection.title, taskArray);
+                console.log(textSection.body);
+                this.page.addChild(task);
+                dialog.removeFrom(dialogRoot);
+            });
+            dialog.attachTo(dialogRoot);
+        });
+    }
+    bindElementToDialog(selector, InputComponent, makeSection) {
+        const element = document.querySelector(selector);
+        element.addEventListener('click', () => {
+            const dialog = new InputDialog();
+            const input = new InputComponent();
+            dialog.addChild(input);
+            dialog.attachTo(this.dialogRoot);
+            dialog.setOnCloseListener(() => {
+                dialog.removeFrom(this.dialogRoot);
+            });
+            dialog.setOnSubmitListener(() => {
+                const image = makeSection(input);
+                this.page.addChild(image);
+                dialog.removeFrom(this.dialogRoot);
+            });
+            dialog.attachTo(this.dialogRoot);
+        });
     }
 }
-new App(document.querySelector('.document'));
+new App(document.querySelector('.document'), document.body);
